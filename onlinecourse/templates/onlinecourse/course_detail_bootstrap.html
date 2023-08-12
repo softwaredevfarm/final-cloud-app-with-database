@@ -39,6 +39,67 @@
         </div>
     </nav>
 
+    <!-- solution 
+
+<div class="container-fluid">
+    <h2>{{ course.name }}</h2>
+    <div class="card-columns-vertical">
+        {% for lesson in course.lesson_set.all %}
+            <div class="card mt-1">
+                <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div>
+                <div class="card-body">{{lesson.content}}</div>
+            </div>
+        {% endfor %}
+    </div>
+    <!-- Task: show questions and choices -->
+    <!-- Use Bootstrap Collapse to hide exam first, more details could be found here
+    https://www.w3schools.com/bootstrap4/bootstrap_collapse.asp-->
+
+    <!-- If user is authenticated, show course exam with a list of question -->
+    {% if user.is_authenticated %}
+    <!-- Use a button element with data-toggle and data-target attributes to trigger the collapse -->
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#exam" aria-expanded="false" aria-controls="exam">
+        Take Exam
+    </button>
+    <!-- Use a div element with class="collapse" and id matching the data-target of the button -->
+    <div id="exam" class="collapse">
+        <div class="card card-body">
+            <!-- Create a form to collect the selected choices for all questions -->
+            <!-- Use a form element with action and method attributes to send the form data to a view function -->
+            <form id="questionform" action="{% url 'onlinecourse:submit_exam' course.id %}" method="post">
+                {% csrf_token %}
+                <!-- Each exam will have many questions -->
+                {% for question in course.question_set.all %}
+                <!-- Use a div element with class="form-group" to group each question and its choices -->
+                <div class="form-group">
+                    <!-- Use a label element to display the question text -->
+                    <label>{{ question.question_text }}</label>
+                    <!-- Each question will have many choices -->
+                    {% for choice in question.choice_set.all %}
+                    <!-- For each question choice, create a checkbox input to save the selection -->
+                    <!-- Use an input element with type="checkbox", name matching the question id, value matching the choice id, and id matching the choice id -->
+                    <div class="form-check">
+                        <input type="checkbox" name="{{ question.id }}" value="{{ choice.id }}" id="{{ choice.id }}" class="form-check-input">
+                        <!-- Use a label element with class="form-check-label" and for matching the input id to display the choice text -->
+                        <label class="form-check-label" for="{{ choice.id }}">
+                            {{ choice.choice_text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                <!-- Add a submit button to send the form data -->
+                <!-- Use a button element with type="submit" and class="btn btn-success" to create a submit button -->
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+    
+    -->
+
     <!-- Page content -->
     <div class="container-fluid">
             <h2>{{ course.name }}</h2>
