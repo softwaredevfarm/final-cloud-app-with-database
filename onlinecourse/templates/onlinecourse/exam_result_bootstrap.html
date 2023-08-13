@@ -39,17 +39,59 @@
     {% if grade > 80 %}
     <div class="alert alert-success">
        <!--HINT Display passed info -->
+       <h4>Congratulations!</h4>
+       <p>You have passed the exam with a score of {{ grade }}%.</p>
+       <p>You have demonstrated your knowledge and skills in {{ course.title }}.</p>
     </div>
-        {% else %}
-        <div class="alert alert-danger">
-            <!--HINT Display failed info -->
-        </div>
-        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
-        {% endif %}
-        <div class="card-columns-vertical mt-1">
-        <h5 class="">Exam results</h5>
-            <!--HINT Display exam results-->
-        </div>
+    {% else %}
+    <div class="alert alert-danger">
+        <!--HINT Display failed info -->
+        <h4>Sorry!</h4>
+        <p>You have failed the exam with a score of {{ grade }}%.</p>
+        <p>You need to score at least 80% to pass the exam.</p>
+        <p>Please review the course materials and try again.</p>
     </div>
+    <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course.id %}">Re-test</a>
+    {% endif %}
+    <div class="card-columns-vertical mt-1">
+    <h5 class="">Exam results</h5>
+        <!--HINT Display exam results-->
+        {% for question in course.question_set.all %}
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">{{ question.text }}</h6>
+                <ul class="list-group list-group-flush">
+                    {% for choice in question.choice_set.all %}
+                    <!-- check if the choice is selected or not -->
+                    {% if choice.id in selected_ids %}
+                    <!-- check if the choice is correct or not -->
+                    {% if choice.is_correct %}
+                    <!-- show a green check mark for correct choice -->
+                    <li class="list-group-item list-group-item-success d-flex justify-content-between align-items-center">
+                        {{ choice.text }}
+                        <span class="badge badge-success badge-pill"><i class="fas fa-check"></i></span>
+                    </li>
+                    {% else %}
+                    <!-- show a red cross mark for incorrect choice -->
+                    <li class="list-group-item list-group-item-danger d-flex justify-content-between align-items-center">
+                        {{ choice.text }}
+                        <span class="badge badge-danger badge-pill"><i class="fas fa-times"></i></span>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <!-- show a gray dash for unselected choice -->
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ choice.text }}
+                        <span class="badge badge-secondary badge-pill"><i class="fas fa-minus"></i></span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 </body>
 </html>
