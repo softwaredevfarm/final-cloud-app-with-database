@@ -90,6 +90,17 @@ class CourseDetailView(generic.DetailView):
     model = Course
     template_name = 'onlinecourse/course_detail_bootstrap.html'
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get the default context
+        pk = self.kwargs['pk']
+        context = super().get_context_data(**kwargs)
+        # Add extra context data
+        context['question_list'] = Question.objects.filter(lesson_id__course__id = pk)
+        # Return the new context
+        return context
+
+
+
 
 def enroll(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
@@ -116,6 +127,7 @@ def enroll(request, course_id):
 def submit(request, course_id):
     # get the current user and the course object
     user = request.user
+    print(course_id)
     course = Course.objects.get(id=course_id)
 
     # get the associated enrollment object
@@ -131,13 +143,13 @@ def submit(request, course_id):
     #     choice = Choice.objects.get(id=choice_id)
     
     # add each selected choice object to the submission object
-    for question in Question.objects.filter(course=course):
+    for question in Question.objects.filter(lesson_id__course=course):
         choice_id = request.POST.get(str(question.id))
         choice = Choice.objects.get(id=choice_id)
         submission.choices.add(choice)
 
     # redirect to a show_exam_result view with the submission id
-    return redirect('show_exam_result', course_id=course.id, submission_id=submission.id)
+    return redirect('onlinecourse:show_exam_result', course_id=course.id, submission_id=submission.id)
 
 
 
@@ -171,11 +183,12 @@ def show_exam_result(request, course_id, submission_id):
     correct_answers = 0
     for choice in submission.choices.all():
         if choice.is_correct:
-            correct_answers += 1
+            print(choice.choice_text)
+            correct_answers += 2
 
     # calculate the total score by adding up the grades for all questions in the course
     total_score = 0
-    for question in Question.objects.filter(course=course):
+    for question in Question.objects.filter(lesson_id__course=course):
         total_score += question.grade
 
     # calculate the grade by dividing the correct answers by the total score
@@ -189,5 +202,5 @@ def show_exam_result(request, course_id, submission_id):
     }
 
     # render the exam_result.html template with the context
-    return render(request, 'exam_result.html', context)
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
