@@ -11,6 +11,8 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # Create your views here.
+from .models import Course, Enrollment, Question, Choice, Submission
+
 
 
 def registration_request(request):
@@ -110,7 +112,32 @@ def enroll(request, course_id):
          # Collect the selected choices from exam form
          # Add each selected choice object to the submission object
          # Redirect to show_exam_result with the submission id
-#def submit(request, course_id):
+
+def submit(request, course_id):
+    # get the current user and the course object
+    user = request.user
+    course = Course.objects.get(id=course_id)
+
+    # get the associated enrollment object
+    enrollment = Enrollment.objects.get(user=user, course=course)
+
+    # create a new submission object referring to the enrollment
+    submission = Submission.objects.create(enrollment=enrollment)
+
+    # collect the selected choices from HTTP request object
+    # example code snippet:
+    # for question in Question.objects.filter(course=course):
+    #     choice_id = request.POST.get(str(question.id))
+    #     choice = Choice.objects.get(id=choice_id)
+    
+    # add each selected choice object to the submission object
+    for question in Question.objects.filter(course=course):
+        choice_id = request.POST.get(str(question.id))
+        choice = Choice.objects.get(id=choice_id)
+        submission.choices.add(choice)
+
+    # redirect to a show_exam_result view with the submission id
+    return redirect('show_exam_result', submission_id=submission.id)
 
 
 # <HINT> A example method to collect the selected choices from the exam form from the request object
